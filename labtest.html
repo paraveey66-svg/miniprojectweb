@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>My Web GIS</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet AJAX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+
+</head>
+
+ <style>
+    #map {
+      height: 600px;
+      width: 100%;
+    }
+  </style>
+
+<body>
+  <h2>How to create Web Map using Leaflet</h2>
+  <div id="map"></div>
+
+  <script>
+    // สร้างแผนที่และตั้งจุดเริ่มต้น
+    var map = L.map('map').setView([16.744, 100.191], 13);
+    var marker_arr = []; // Array to store markers
+
+    // ================= Base Maps =================
+    var google_map = L.tileLayer('https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}', {
+      maxZoom: 18
+    });
+
+    var openstreetmap = L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18
+    });
+
+    var EsriWorldStreetMap = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 18
+    });
+
+    var EsriWorldImagery = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 18
+    });
+
+    var cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      subdomains: ['a', 'b', 'c', 'd'],
+      attribution: '&copy; CartoDB'
+    });
+
+    var cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      subdomains: ['a', 'b', 'c', 'd'],
+      attribution: '&copy; CartoDB'
+    });
+
+    var openTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      maxZoom: 17,
+      attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap (CC-BY-SA)'
+    });
+
+    var wikimediaMap = L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: '<a href="https://wikimediafoundation.org/wiki/Maps_Terms_of_Use">Wikimedia</a>'
+    }).addTo(map); // Default basemap
+
+
+
+
+
+    // ============ [เพิ่ม WMS Layers] ============
+    var districtutt_wms = L.tileLayer.wms('http://localhost:8080/geoserver/geo42/wms', {
+      layers: 'utt:district',
+      format: 'image/png',
+      transparent: true,
+      tiled: true
+    });
+
+    var roadutt3_wms = L.tileLayer.wms('http://localhost:8080/geoserver/utt/wms', {
+      layers: 'utt:road',
+      format: 'image/png',
+      transparent: true,
+      tiled: true
+    });
+
+    var gcputt_wms = L.tileLayer.wms('http://localhost:8080/geoserver/geo42/wms', {
+      layers: 'utt:gcp',
+      format: 'image/png',
+      transparent: true,
+      tiled: true
+    });
+
+    // =============== Custom buildingIcon ===============
+    var buildingIcon = L.icon({
+      iconUrl: 'https://img.lovepik.com/png/20231115/hospital-building-clipart-3d-isometric-illustration-medical-office-building-with_597059_wh1200.png',
+      iconSize: [50, 50],
+      iconAnchor: [25, 50],
+      popupAnchor: [0, -50]
+    });
+
+    var marker = L.marker([16.746, 100.1959], { icon: buildingIcon })
+      .bindPopup("คณะเกษตรศาสตร์ฯ มหาวิทยาลัยนเรศวร");
+
+    var circle = L.circle([16.746, 100.1959], {
+      radius: 200,
+      color: "blue",
+      fillOpacity: 0.2
+    });
+
+    var polyline = L.polyline([
+      [16.742, 100.180],
+      [16.735, 100.189],
+      [16.735, 100.190],
+      [16.739, 100.189]
+    ], { color: 'red' });
+
+    var polygon = L.polygon([
+      [16.752, 100.176],
+      [16.743, 100.176],
+      [16.743, 100.190],
+      [16.752, 100.190]
+    ], { color: 'green' });
+
+    function popUp(f, l) {
+      var out = [];
+      if (f.properties) {
+        for (key in f.properties) {
+          out.push(key + ": " + f.properties[key]);
+        }
+        l.bindPopup(out.join("<br />"));
+      }
+    }
+
+    //คำสั่งเรียกไฟล์ GeoJSON มาแสดง
+    var ThaiProvJSON = new L.GeoJSON.AJAX(['thailand_province.geojson'], { onEachFeature: popUp });
+
+    // ============ Click Event for Adding Markers ============
+    map.on("click", function (e) {
+      if (marker_arr.length > 0) {
+        for (var i = 0; i < marker_arr.length; i++) {
+          map.removeLayer(marker_arr[i]);
+        }
+        marker_arr = []; // Clear the array
+      }
+
+      var ct = "<center><h3>Search By Distance</h3></center>";
+      ct += "Lat: <input type='number' id='lat' value=" + e.latlng.lat + ">";
+      ct += "<br>Lng: <input type='number' id='lng' value=" + e.latlng.lng + "><br>";
+      ct += "Distance: <input type='text' id='distance'>";
+      ct += "<br><br><center><button onclick='sendtodb();'>Submit</button></center>";
+
+      var newMarker = new L.Marker([e.latlng.lat, e.latlng.lng]).addTo(map).bindPopup(ct).openPopup();
+      marker_arr.push(newMarker);
+    });
+
+    // Function to handle submission (you'll need to implement this)
+    function sendtodb() {
+      var lat = document.getElementById('lat').value;
+      var lng = document.getElementById('lng').value;
+      var distance = document.getElementById('distance').value;
+
+      // Here you would typically make an AJAX call to send data to your server
+      console.log("Data to send:", { lat: lat, lng: lng, distance: distance });
+      alert("Data to send:\nLat: " + lat + "\nLng: " + lng + "\nDistance: " + distance);
+
+      // Implement your actual submission logic here
+    }
+
+    // ============ Layer Control =============
+    var baseLayers = {
+      "Google Map": google_map,
+      "OpenStreetMap": openstreetmap,
+      "Esri Street": EsriWorldStreetMap,
+      "Esri Imagery": EsriWorldImagery,
+      "Carto Light": cartoLight,
+      "Carto Dark": cartoDark,
+      "OpenTopoMap": openTopoMap,
+      "Wikimedia": wikimediaMap
+    };
+
+    var overlays = {
+      "จุด": marker,
+      "วงกลม": circle,
+      "เส้น": polyline,
+      "สี่เหลี่ยม": polygon,
+      "ขอบเขตจังหวัด000 (GeoJSON)": ThaiProvJSON,
+      "ขอบเขตอำเภออุตรดิตถ์ (WMS)": districtutt_wms,
+      "ถนนอุตรดิตถ์ (WMS)": roadutt3_wms,
+      "GCP อุตรดิตถ์ (WMS)": gcputt_wms
+    };
+
+    L.control.layers(baseLayers, overlays).addTo(map);
+  </script>
+</body>
+
+</html>

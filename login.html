@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="homepage">
+
+    <div class="login-container">
+        <h2>เข้าสู่ระบบ</h2>
+        <form id="loginForm">
+            <input type="text" name="username" placeholder="ชื่อผู้ใช้" required>
+            <input type="password" name="password" placeholder="รหัสผ่าน" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <script>
+        // ตรวจสอบว่าผู้ใช้ล็อกอินแล้ว ถ้าใช่ให้ไป index.html
+        if (localStorage.getItem("isLoggedIn")) {
+            window.location.href = "index.html";
+        }
+
+        // ฟังก์ชันล็อกอิน
+        document.getElementById("loginForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const username = this.username.value;
+            const password = this.password.value;
+
+            // ตัวอย่างตรวจสอบ username และ password แบบง่าย
+            if (username === "admin" && password === "1234") {
+                // เก็บสถานะล็อกอิน
+                localStorage.setItem("isLoggedIn", "true");
+                // ไปหน้า index.html
+                window.location.href = "index.html";
+            } else {
+                alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+            }
+        });
+    </script>
+
+</body>
+</html>

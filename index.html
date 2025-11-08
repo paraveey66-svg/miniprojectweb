@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="homepage">
+
+<div id="content" class="homepage-container">
+    <div class="icon-container">
+        <a href="profile.html" class="icon-link">About Me</a>
+        <a href="agi.html" class="icon-link">Agi 64-67</a>
+        <a href="test.html" class="icon-link">Web ตามคู่มือ</a>
+        <a href="indexcafe.html" class="icon-link">Phrae</a>
+    </div>
+    <button id="logoutBtn">Logout</button>
+</div>
+
+<script>
+    // ตรวจสอบว่าเคยล็อกอินหรือไม่
+    if (!localStorage.getItem("isLoggedIn")) {
+        window.location.href = "login.html";
+    }
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", function() {
+        localStorage.removeItem("isLoggedIn");
+        window.location.href = "logout.html";
+    });
+</script>
+
+</body>
+</html>

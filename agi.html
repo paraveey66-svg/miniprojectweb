@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty og Agriculture - มหาวิทยาลัยนเรศวร</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2E8B57;
+            --primary-dark: #1F6B45;
+            --primary-light: #4CAF7D;
+            --secondary: #FF6B35;
+            --accent: #FFD166;
+            --light: #F8F9FA;
+            --dark: #2D3748;
+            --text: #4A5568;
+            --text-light: #718096;
+            --bg: #F7FAFC;
+            --card-bg: #FFFFFF;
+            --success: #48BB78;
+            --warning: #ED8936;
+            --danger: #F56565;
+            --gradient-primary: linear-gradient(135deg, #2E8B57 0%, #4CAF7D 100%);
+            --gradient-secondary: linear-gradient(135deg, #FF6B35 0%, #FF8E53 100%);
+            --gradient-accent: linear-gradient(135deg, #FFD166 0%, #FFE08A 100%);
+            --shadow: 0 10px 25px rgba(0,0,0,0.08);
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.12);
+            --radius: 16px;
+            --radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #EDF2F7 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Glassmorphism Header */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px 40px;
+            border-radius: var(--radius);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .title-section h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .title-section .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        /* Modern Navigation */
+        .modern-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-pill {
+            background: var(--card-bg);
+            border: 2px solid transparent;
+            padding: 18px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Kanit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-pill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(46, 139, 87, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .nav-pill:hover::before {
+            left: 100%;
+        }
+
+        .nav-pill.active {
+            background: var(--gradient-primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .nav-pill i {
+            font-size: 1.3rem;
+        }
+
+        /* Stats Cards - Modern Design */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card-modern {
+            background: var(--card-bg);
+            padding: 35px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border-left: 5px solid var(--primary);
+        }
+
+        .stat-card-modern:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-primary);
+            opacity: 0.05;
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .stat-icon-modern {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-content h3 {
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+
+        .stat-number-modern {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        /* Main Content Layout */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Chart Section - Modern */
+        .chart-modern {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 35px;
+            box-shadow: var(--shadow);
+            grid-column: 1 / -1;
+        }
+
+        .section-header-modern {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-modern {
+            padding: 14px 22px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            background: var(--card-bg);
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text);
+            min-width: 180px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .control-modern:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+        }
+
+        .chart-container-modern {
+            height: 450px;
+            position: relative;
+            margin-top: 25px;
+        }
+
+        /* Map Section - Modern */
+        .map-modern {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 35px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+
+        #map {
+            height: 520px;
+            width: 100%;
+            border-radius: 12px;
+            border: 2px solid #E2E8F0;
+            overflow: hidden;
+        }
+
+        /* Table Section - Modern */
+        .table-modern {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 35px;
+            box-shadow: var(--shadow);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .search-modern {
+            flex: 1;
+            min-width: 350px;
+            position: relative;
+        }
+
+        .search-input-modern {
+            width: 100%;
+            padding: 16px 25px 16px 55px;
+            border: 2px solid #E2E8F0;
+            border-radius: 50px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--card-bg);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .search-input-modern:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+        }
+
+        .search-icon-modern {
+            position: absolute;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 600px;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        .modern-table th {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 20px 18px;
+            text-align: left;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .modern-table th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+
+        .modern-table th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+        .modern-table td {
+            padding: 18px;
+            border-bottom: 1px solid #E2E8F0;
+            transition: var(--transition);
+        }
+
+        .modern-table tr:hover td {
+            background: rgba(46, 139, 87, 0.05);
+        }
+
+        /* User Section - Modern */
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 12px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .user-avatar-modern {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .user-info h4 {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 2px;
+        }
+
+        .user-info p {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .action-btn {
+            padding: 14px 28px;
+            border: 2px solid rgba(46, 139, 87, 0.2);
+            border-radius: 50px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: var(--gradient-primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Loading Animation */
+        .loading-modern {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-light);
+        }
+
+        .loading-spinner-modern {
+            width: 70px;
+            height: 70px;
+            border: 4px solid #E2E8F0;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 25px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Floating Elements */
+        .floating-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            z-index: 1000;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.15) rotate(15deg);
+            box-shadow: 0 20px 40px rgba(46, 139, 87, 0.4);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            padding: 0 10px;
+        }
+
+        .pagination-info {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .page-btn {
+            padding: 12px 25px;
+            border: 2px solid #E2E8F0;
+            border-radius: 10px;
+            background: white;
+            color: var(--text);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Kanit', sans-serif;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .user-section {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .modern-nav {
+                flex-direction: column;
+            }
+            
+            .nav-pill {
+                justify-content: center;
+            }
+            
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls-group, .table-header {
+                flex-direction: column;
+            }
+            
+            .control-modern, .search-modern {
+                min-width: 100%;
+            }
+            
+            .title-section h1 {
+                font-size: 2rem;
+            }
+            
+            .floating-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Badge Styles */
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Modern Glass Header -->
+        <header class="glass-header fade-in">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo pulse">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <div class="title-section">
+                        <h1>Faculty og Agriculture</h1>
+                        <div class="subtitle">มหาวิทยาลัยนเรศวร - ระบบข้อมูลนิสิตคณะเกษตรศาสตร์</div>
+                    </div>
+                </div>
+                
+                <div class="user-section">
+                    <div class="user-card">
+                        <div class="user-avatar-modern">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="user-info">
+                            <h4>ผู้ดูแลระบบ</h4>
+                            <p>Agricultural Data</p>
+                        </div>
+                    </div>
+                    <button class="action-btn" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i>
+                        อัพเดทข้อมูล
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Modern Navigation Pills -->
+        <nav class="modern-nav">
+            <button class="nav-pill active" onclick="selectTable('agi64')">
+                <i class="fas fa-leaf"></i>
+                <span>AGI64</span>
+                <span class="badge" id="count-agi64">0</span>
+            </button>
+            <button class="nav-pill" onclick="selectTable('agi65')">
+                <i class="fas fa-tree"></i>
+                <span>AGI65</span>
+                <span class="badge" id="count-agi65">0</span>
+            </button>
+            <button class="nav-pill" onclick="selectTable('agi66')">
+                <i class="fas fa-tractor"></i>
+                <span>AGI66</span>
+                <span class="badge" id="count-agi66">0</span>
+            </button>
+            <button class="nav-pill" onclick="selectTable('agi67')">
+                <i class="fas fa-apple-alt"></i>
+                <span>AGI67</span>
+                <span class="badge" id="count-agi67">0</span>
+            </button>
+        </nav>
+
+        <!-- Modern Statistics Grid -->
+        <div class="stats-grid fade-in">
+            <div class="stat-card-modern">
+                <div class="stat-icon-modern">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>จำนวนนิสิตทั้งหมด</h3>
+                    <div class="stat-number-modern" id="total-students">0</div>
+                    <div class="stat-trend">
+                        <i class="fas fa-chart-line"></i>
+                        <span>ข้อมูลอัพเดทล่าสุด</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card-modern">
+                <div class="stat-icon-modern">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>จำนวนหลักสูตร</h3>
+                    <div class="stat-number-modern" id="total-curriculums">0</div>
+                    <div class="stat-trend">
+                        <i class="fas fa-book-open"></i>
+                        <span>หลากหลายหลักสูตร</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card-modern">
+                <div class="stat-icon-modern">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>จำนวนภาควิชา</h3>
+                    <div class="stat-number-modern" id="total-departments">0</div>
+                    <div class="stat-trend">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>ครอบคลุมทุกสาขา</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card-modern">
+                <div class="stat-icon-modern">
+                    <i class="fas fa-map"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>จำนวนจังหวัด</h3>
+                    <div class="stat-number-modern" id="total-provinces">0</div>
+                    <div class="stat-trend">
+                        <i class="fas fa-globe-asia"></i>
+                        <span>ทั่วประเทศไทย</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Layout -->
+        <div class="dashboard-layout">
+            <!-- Modern Chart Section -->
+            <section class="chart-modern fade-in">
+                <div class="section-header-modern">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-pie"></i>
+                        สถิติข้อมูลนิสิตเชิงลึก
+                    </h2>
+                    <div class="controls-group">
+                        <select class="control-modern" id="chart-type" onchange="updateChart()">
+                            <option value="หลักสูตร">แยกตามหลักสูตร</option>
+                            <option value="จังหวัด">แยกตามจังหวัด</option>
+                            <option value="ภาควิชา">แยกตามภาควิชา</option>
+                            <option value="จบจากโรงเรียน">แยกตามโรงเรียน</option>
+                        </select>
+                        <select class="control-modern" id="chart-limit" onchange="updateChart()">
+                            <option value="5">แสดง 5 อันดับ</option>
+                            <option value="10" selected>แสดง 10 อันดับ</option>
+                            <option value="15">แสดง 15 อันดับ</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container-modern">
+                    <canvas id="data-chart"></canvas>
+                </div>
+            </section>
+
+            <!-- Modern Map Section -->
+            <section class="map-modern fade-in">
+                <div class="section-header-modern">
+                    <h2 class="section-title">
+                        <i class="fas fa-map-marked-alt"></i>
+                        การกระจายตัวทางภูมิศาสตร์
+                    </h2>
+                    <select class="control-modern" id="map-view" onchange="updateMapView()">
+                        <option value="standard">มุมมองมาตรฐาน</option>
+                        <option value="satellite">มุมมองดาวเทียม</option>
+                    </select>
+                </div>
+                <div id="map"></div>
+            </section>
+
+            <!-- Modern Table Section -->
+            <section class="table-modern fade-in">
+                <div class="table-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-table"></i>
+                        รายละเอียดนิสิตทั้งหมด
+                    </h2>
+                    <div class="controls-group">
+                        <div class="search-modern">
+                            <i class="fas fa-search search-icon-modern"></i>
+                            <input type="text" class="search-input-modern" id="table-search" 
+                                   placeholder="ค้นหาด้วยชื่อ, รหัส, จังหวัด, โรงเรียน..." 
+                                   onkeyup="searchTable()">
+                        </div>
+                        <select class="control-modern" id="sort-by" onchange="sortTable()">
+                            <option value="s_name">เรียงตามชื่อ</option>
+                            <option value="หลักสูตร">เรียงตามหลักสูตร</option>
+                            <option value="จังหวัด">เรียงตามจังหวัด</option>
+                            <option value="s_id">เรียงตามรหัสนิสิต</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>รหัสนิสิต</th>
+                                <th>ชื่อ-นามสกุล</th>
+                                <th>หลักสูตร</th>
+                                <th>ภาควิชา</th>
+                                <th>จังหวัด</th>
+                                <th>โรงเรียนที่จบ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-tbody">
+                            <tr>
+                                <td colspan="6" class="loading-modern">
+                                    <div class="loading-spinner-modern"></div>
+                                    <div>กำลังโหลดข้อมูลจากฐานข้อมูล...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">
+                        แสดง <span id="current-count">0</span> จาก <span id="total-count">0</span> รายการ
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="page-btn" onclick="previousPage()">
+                            <i class="fas fa-chevron-left"></i>
+                            ก่อนหน้า
+                        </button>
+                        <button class="page-btn" onclick="nextPage()">
+                            ถัดไป
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Floating Action Button -->
+        <button class="floating-btn" onclick="scrollToTop()" title="กลับสู่ด้านบน">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <script>
+        // ตัวแปร global
+        let allStudents = [];
+        let currentChart = null;
+        let map = null;
+        let markers = [];
+        let currentTable = 'agi64';
+        let currentPage = 1;
+        let pageSize = 100;
+        let filteredStudents = [];
+
+        // โหลดข้อมูลเมื่อหน้าเว็บโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStudents(currentTable);
+            initMap();
+        });
+
+        // เลือกตาราง
+        function selectTable(tableName) {
+            currentTable = tableName;
+            currentPage = 1;
+            
+            // อัพเดทปุ่มที่ active
+            document.querySelectorAll('.nav-pill').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // โหลดข้อมูลใหม่
+            loadStudents(tableName);
+        }
+
+        // โหลดข้อมูลนิสิตจาก API
+        async function loadStudents(tableName) {
+            try {
+                const tbody = document.getElementById('students-tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="loading-modern">
+                            <div class="loading-spinner-modern"></div>
+                            <div>กำลังโหลดข้อมูลจาก ${tableName}...</div>
+                        </td>
+                    </tr>
+                `;
+
+                // เรียก API เพื่อดึงข้อมูล
+                const response = await fetch(`api/get_points.php?table=${tableName}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allStudents = data.data || [];
+                    filteredStudents = [...allStudents];
+                    updateDisplay();
+                    updateSummary();
+                    updateChart();
+                    
+                    // อัพเดท badge count
+                    document.getElementById(`count-${tableName}`).textContent = allStudents.length;
+                    
+                    showNotification(`โหลดข้อมูล ${tableName} สำเร็จ: ${allStudents.length} รายการ`, 'success');
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถโหลดข้อมูลได้');
+                }
+                
+            } catch (error) {
+                console.error('Error loading students:', error);
+                const tbody = document.getElementById('students-tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--danger); padding: 60px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                            <h3 style="margin-bottom: 10px;">เกิดข้อผิดพลาดในการโหลดข้อมูล</h3>
+                            <p style="color: var(--text-light);">${error.message}</p>
+                        </td>
+                    </tr>
+                `;
+                
+                allStudents = [];
+                filteredStudents = [];
+                updateDisplay();
+                updateSummary();
+                updateChart();
+            }
+        }
+
+        // รีเฟรชข้อมูล
+        function refreshData() {
+            loadStudents(currentTable);
+        }
+
+        // อัพเดทการแสดงผลทั้งหมด
+        function updateDisplay() {
+            updateTable();
+            updateMap();
+            updatePagination();
+        }
+
+        // อัพเดทตาราง
+        function updateTable() {
+            const tbody = document.getElementById('students-tbody');
+            
+            if (filteredStudents.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 60px; color: var(--text-light);">
+                            <i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;"></i>
+                            <h3 style="margin-bottom: 10px;">ไม่พบข้อมูลนิสิต</h3>
+                            <p>ไม่มีข้อมูลในตาราง ${currentTable} หรือไม่ตรงกับการค้นหา</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const currentStudents = filteredStudents.slice(startIndex, endIndex);
+
+            tbody.innerHTML = '';
+
+            currentStudents.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${student.s_id || '-'}</strong></td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></div>
+                            ${student.s_name || '-'}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge" style="background: var(--gradient-secondary);">
+                            ${student.หลักสูตร || '-'}
+                        </span>
+                    </td>
+                    <td>${student.ภาควิชา || '-'}</td>
+                    <td>
+                        <span style="display: inline-flex; align-items: center; gap: 5px;">
+                            <i class="fas fa-map-marker-alt" style="color: var(--danger);"></i>
+                            ${student.จังหวัด || '-'}
+                        </span>
+                    </td>
+                    <td>${student.จบจากโรงเรียน || '-'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            updatePagination();
+        }
+
+        // อัพเดทแผนที่
+        function updateMap() {
+            if (!map) return;
+
+            // ล้าง marker เก่า
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            const studentsWithCoords = allStudents.filter(student => 
+                student.lat && student.long && student.lat != 0 && student.long != 0
+            );
+
+            if (studentsWithCoords.length === 0) {
+                // ถ้าไม่มีพิกัด ให้แสดงประเทศไทย
+                map.setView([13.736717, 100.523186], 6);
+                return;
+            }
+
+            // เพิ่ม marker ใหม่
+            studentsWithCoords.forEach(student => {
+                const marker = L.marker([student.lat, student.long])
+                    .addTo(map)
+                    .bindPopup(`
+                        <div style="min-width: 220px; font-family: 'Kanit', sans-serif;">
+                            <div style="background: var(--gradient-primary); color: white; padding: 15px; border-radius: 10px 10px 0 0; margin: -10px -10px 10px -10px;">
+                                <h4 style="margin: 0; font-size: 1.1rem;">${student.s_name || 'ไม่มีข้อมูล'}</h4>
+                            </div>
+                            <div style="padding: 5px 0;">
+                                <p style="margin: 8px 0;"><strong><i class="fas fa-id-card"></i> รหัส:</strong> ${student.s_id || '-'}</p>
+                                <p style="margin: 8px 0;"><strong><i class="fas fa-graduation-cap"></i> หลักสูตร:</strong> ${student.หลักสูตร || '-'}</p>
+                                <p style="margin: 8px 0;"><strong><i class="fas fa-building"></i> จังหวัด:</strong> ${student.จังหวัด || '-'}</p>
+                                <p style="margin: 8px 0;"><strong><i class="fas fa-school"></i> โรงเรียน:</strong> ${student.จบจากโรงเรียน || '-'}</p>
+                            </div>
+                        </div>
+                    `);
+                markers.push(marker);
+            });
+
+            // ซูมแผนที่ให้เห็นทั้งหมด
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+
+        // อัพเดทมุมมองแผนที่
+        function updateMapView() {
+            const viewType = document.getElementById('map-view').value;
+            
+            if (map) {
+                map.remove();
+            }
+            
+            initMap(viewType);
+            updateMap();
+        }
+
+        // อัพเดทสรุปข้อมูล
+        function updateSummary() {
+            const curriculums = new Set(allStudents.map(s => s.หลักสูตร).filter(Boolean));
+            const departments = new Set(allStudents.map(s => s.ภาควิชา).filter(Boolean));
+            const provinces = new Set(allStudents.map(s => s.จังหวัด).filter(Boolean));
+
+            document.getElementById('total-students').textContent = allStudents.length.toLocaleString();
+            document.getElementById('total-curriculums').textContent = curriculums.size.toLocaleString();
+            document.getElementById('total-departments').textContent = departments.size.toLocaleString();
+            document.getElementById('total-provinces').textContent = provinces.size.toLocaleString();
+        }
+
+        // อัพเดทแผนภูมิ
+        function updateChart() {
+            const chartType = document.getElementById('chart-type').value;
+            const limit = parseInt(document.getElementById('chart-limit').value);
+            const ctx = document.getElementById('data-chart').getContext('2d');
+            
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            const chartData = getChartData(chartType, limit);
+            
+            currentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        data: chartData.values,
+                        backgroundColor: [
+                            '#2E8B57', '#FF6B35', '#FFD166', '#4ECDC4',
+                            '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD',
+                            '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+                            '#F8C471', '#82E0AA', '#F1948A'
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {
+                                    family: "'Kanit', sans-serif",
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} คน (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ข้อมูลสำหรับแผนภูมิ
+        function getChartData(type, limit) {
+            let data = {};
+            
+            allStudents.forEach(student => {
+                let key = student[type] || 'ไม่ระบุ';
+                data[key] = (data[key] || 0) + 1;
+            });
+
+            const sorted = Object.entries(data)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, limit);
+
+            return {
+                labels: sorted.map(item => item[0]),
+                values: sorted.map(item => item[1])
+            };
+        }
+
+        // ฟังก์ชันค้นหาในตาราง
+        function searchTable() {
+            const input = document.getElementById('table-search').value.toLowerCase();
+            
+            if (input.length === 0) {
+                filteredStudents = [...allStudents];
+            } else {
+                filteredStudents = allStudents.filter(student => 
+                    (student.s_id && student.s_id.toString().toLowerCase().includes(input)) ||
+                    (student.s_name && student.s_name.toLowerCase().includes(input)) ||
+                    (student.หลักสูตร && student.หลักสูตร.toLowerCase().includes(input)) ||
+                    (student.ภาควิชา && student.ภาควิชา.toLowerCase().includes(input)) ||
+                    (student.จังหวัด && student.จังหวัด.toLowerCase().includes(input)) ||
+                    (student.จบจากโรงเรียน && student.จบจากโรงเรียน.toLowerCase().includes(input))
+                );
+            }
+            
+            currentPage = 1;
+            updateTable();
+        }
+
+        // เรียงตาราง
+        function sortTable() {
+            const sortBy = document.getElementById('sort-by').value;
+            
+            filteredStudents.sort((a, b) => {
+                const aVal = a[sortBy] || '';
+                const bVal = b[sortBy] || '';
+                return aVal.localeCompare(bVal, 'th');
+            });
+            
+            updateTable();
+        }
+
+        // อัพเดท pagination
+        function updatePagination() {
+            const totalCount = filteredStudents.length;
+            const startIndex = (currentPage - 1) * pageSize + 1;
+            const endIndex = Math.min(startIndex + pageSize - 1, totalCount);
+            
+            document.getElementById('current-count').textContent = `${startIndex}-${endIndex}`;
+            document.getElementById('total-count').textContent = totalCount.toLocaleString();
+        }
+
+        // หน้าที่แล้ว
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTable();
+            }
+        }
+
+        // หน้าถัดไป
+        function nextPage() {
+            const totalPages = Math.ceil(filteredStudents.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTable();
+            }
+        }
+
+        // เริ่มต้นแผนที่
+        function initMap(viewType = 'standard') {
+            map = L.map('map').setView([13.736717, 100.523186], 6);
+            
+            let tileLayer;
+            if (viewType === 'satellite') {
+                tileLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                    maxZoom: 20,
+                    subdomains: ['mt0','mt1','mt2','mt3'],
+                    attribution: '&copy; Google'
+                });
+            } else {
+                tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                });
+            }
+            
+            tileLayer.addTo(map);
+        }
+
+        // แสดงการแจ้งเตือน
+        function showNotification(message, type = 'success') {
+            // สร้าง notification element ชั่วคราว
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                border-radius: 10px;
+                color: white;
+                font-weight: 500;
+                z-index: 1001;
+                transform: translateX(400px);
+                transition: transform 0.3s ease;
+                box-shadow: var(--shadow-lg);
+                background: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // เลื่อนกลับสู่ด้านบน
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>

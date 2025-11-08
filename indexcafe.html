@@ -1,0 +1,308 @@
+<!DOCTYPE html> 
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>My Web GIS - Cafe Phrae</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+ integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+ crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+ crossorigin=""></script>
+
+<!-- jQuery สำหรับเรียก API -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Font Awesome สำหรับไอคอน -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* เต็มหน้าจอ */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f1eb;
+}
+
+/* Header */
+.header {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 30px;
+  background: linear-gradient(135deg, #d7ccc8 0%, #bcaaa4 100%);
+  color: #5d4037;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  position: relative;
+  border-bottom: 1px solid #a1887f;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-icon {
+  font-size: 32px;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 16px;
+  opacity: 0.9;
+  font-weight: 300;
+}
+
+/* Map */
+#map {
+  height: calc(100% - 80px - 50px); /* ลดความสูงเพื่อรองรับ footer */
+  width: 100%;
+}
+
+/* Emoji cafe marker */
+.emoji-icon {
+  font-size: 48px;
+  text-align: center;
+  line-height: 48px;
+  transform: translateY(-10px);
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Legend */
+#legend {
+  position: absolute;
+  bottom: 70px; /* ปรับตำแหน่งให้อยู่เหนือ footer */
+  left: 20px;
+  background: rgba(245, 241, 235, 0.95);
+  padding: 15px;
+  border-radius: 10px;
+  z-index: 1000;
+  max-width: 220px;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(188, 170, 164, 0.5);
+}
+#legend h4 {
+  margin: 0 0 10px 0;
+  color: #8d6e63;
+  font-weight: 600;
+  border-bottom: 1px solid #d7ccc8;
+  padding-bottom: 5px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 10px;
+  border: 1px solid #8d6e63;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Custom control panel */
+.control-panel {
+  position: absolute;
+  top: 100px;
+  right: 20px;
+  background: rgba(245, 241, 235, 0.95);
+  padding: 15px;
+  border-radius: 10px;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(188, 170, 164, 0.5);
+  min-width: 200px;
+}
+
+.control-panel h3 {
+  margin: 0 0 15px 0;
+  color: #8d6e63;
+  font-weight: 600;
+  border-bottom: 1px solid #d7ccc8;
+  padding-bottom: 5px;
+}
+
+.layer-control {
+  margin-bottom: 10px;
+}
+
+.layer-control label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #5d4037;
+}
+
+.layer-control input {
+  margin-right: 8px;
+}
+
+/* Popup styling */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  background-color: #f5f1eb;
+  border: 1px solid #d7ccc8;
+}
+
+.leaflet-popup-content {
+  margin: 15px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #5d4037;
+}
+
+.leaflet-popup-content b {
+  color: #8d6e63;
+  font-size: 16px;
+}
+
+.leaflet-popup-tip {
+  background: #f5f1eb;
+  border: 1px solid #d7ccc8;
+}
+
+/* Footer */
+.footer {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #bcaaa4 0%, #d7ccc8 100%);
+  color: #5d4037;
+  font-size: 14px;
+  border-top: 1px solid #a1887f;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+}
+
+/* Leaflet Control Styling */
+.leaflet-control-layers {
+  background-color: rgba(245, 241, 235, 0.95) !important;
+  border: 1px solid #d7ccc8 !important;
+}
+
+.leaflet-control-layers-toggle {
+  background-color: #f5f1eb !important;
+}
+
+.leaflet-bar a, .leaflet-bar a:hover {
+  background-color: #f5f1eb !important;
+  color: #5d4037 !important;
+  border-bottom: 1px solid #d7ccc8 !important;
+}
+
+.leaflet-control-zoom-in, .leaflet-control-zoom-out {
+  background-color: #f5f1eb !important;
+  color: #5d4037 !important;
+  border: 1px solid #d7ccc8 !important;
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">☕</div>
+    <div>
+      <div class="logo-text">Cafe Phrae</div>
+    </div>
+  </div>
+</div>
+
+<!-- แผนที่ -->
+<div id="map"></div>
+
+<div class="footer">
+  พัฒนาโดย WebGIS Team | ข้อมูลอัพเดตล่าสุด: 2023
+</div>
+
+<script>
+// ======================
+// ตั้งค่าแผนที่ Leaflet
+// ======================
+var map = L.map('map').setView([18.145, 100.141], 13);
+
+// Base Layers
+var google_map = L.tileLayer('https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '&copy; Google Maps' });
+var openstreetmap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+var esri_street = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: '&copy; Esri' });
+var esri_imagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: '&copy; Esri' });
+
+var baseLayers = {
+  "Google Map": google_map,
+  "OpenStreetMap": openstreetmap,
+  "Esri Street": esri_street,
+  "Esri Imagery": esri_imagery
+};
+
+// WMS Layers
+var phrae_amphoe = L.tileLayer.wms('http://localhost:8080/geoserver/phrae/wms', { layers: 'phrae:Phrae', format: 'image/png', transparent: true, tiled: true, attribution: 'GeoServer WMS' });
+var phrae_road = L.tileLayer.wms('http://localhost:8080/geoserver/phrae/wms', { layers: 'phrae:531', format: 'image/png', transparent: true, tiled: true, attribution: 'GeoServer WMS' });
+var phrae_point = L.tileLayer.wms('http://localhost:8080/geoserver/phrae/wms', { layers: 'phrae:untitled', format: 'image/png', transparent: true, tiled: true, attribution: 'GeoServer WMS' });
+
+// Overlay Layers
+var cafeLayer = L.layerGroup();
+var thaiwaterLayer = L.layerGroup();
+var rain24hLayer = L.layerGroup();
+
+var overlays = {
+  "☕ คาเฟ่": cafeLayer,
+  "ขอบเขตอำเภอจังหวัดแพร่": phrae_amphoe,
+  "ถนนสายหลัก": phrae_road,
+  "แหล่งท่องเที่ยวที่มีสิ่งอำนวยความสะดวกให้ผู้สูงวัย": phrae_point
+};
+
+L.control.layers(baseLayers, overlays).addTo(map);
+
+// ======================
+// ดึงข้อมูล GeoJSON
+// ======================
+fetch('json_sql.php')
+.then(res => res.json())
+.then(data => {
+  var geojsonLayer = L.geoJSON(data, {
+    onEachFeature: function(feature, layer) {
+      if(feature.properties){
+        let popupContent = `
+          <b>${feature.properties.name}</b><br>
+          📍 <b>ที่อยู่:</b> ${feature.properties.address || '-'}<br>
+          🕒 <b>เวลาเปิด:</b> ${feature.properties.opening_hours || '-'}<br>
+          📅 <b>วันที่เปิดบริการ:</b> ${feature.properties.open_daily || '-'}
+        `;
+        layer.bindPopup(popupContent);
+      }
+    },
+    pointToLayer: function(feature, latlng){
+      return L.marker(latlng, {
+        icon: L.divIcon({
+          className:"emoji-icon",
+          html:"☕",
+          iconSize:[50,50],
+          iconAnchor:[25,25],
+          popupAnchor:[0,-25]
+        })
+      });
+    }
+  }).addTo(cafeLayer);
+  cafeLayer.addTo(map);
+  map.fitBounds(cafeLayer.getBounds());
+});
+</script>
+</body>
+</html>
